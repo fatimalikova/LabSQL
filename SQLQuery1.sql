@@ -1,5 +1,7 @@
-CREATE DATABASE DemoApp
+﻿CREATE DATABASE DemoApp
+
 USE DemoApp
+
 CREATE TABLE People 
 (
 Id INT PRIMARY KEY IDENTITY(1,1),
@@ -9,15 +11,16 @@ PhoneNumber INT,
 Email NVARCHAR(50),
 Age INT NOT NULL,
 Gender NVARCHAR(50),
-HasCitizenship BIT
+HasCitizenship BIT,
+CityId INT
 );
 
 CREATE TABLE Countries
 (
 Id INT PRIMARY KEY IDENTITY,
 [Name] NVARCHAR(50),
-Area DECIMAL(10,2),
-CityId INT
+Area DECIMAL(10,2)
+
 );
 
 CREATE TABLE Cities
@@ -25,54 +28,59 @@ CREATE TABLE Cities
 Id INT PRIMARY KEY IDENTITY,
 [Name] NVARCHAR(50),
 Area DECIMAL(10,2),
-PersonId INT
+CountryId INT
 );
 
+INSERT INTO Countries ([Name], Area)
+VALUES
+('USA', 9833520.00),
+('Germany', 357022.00),
+('France', 551695.00);
+
+
+INSERT INTO Cities ([Name], Area, CountryId)
+VALUES
+('New York', 783.80, 1),
+('Berlin', 891.80, 2),
+('Paris', 105.40, 3);
+
 INSERT INTO People
-([Name], Surname, PhoneNumber, Email, Age, Gender, HasCitizenship)
+([Name], Surname, PhoneNumber, Email, Age, Gender, HasCitizenship, CityId)
 VALUES
-('Ali', 'Mammadov', 501234567, 'ali@mail.com', 25, 'Male', 1),
-('Aysel', 'Huseynova', 551112233, 'aysel@mail.com', 22, 'Female', 1),
-('Kamal', 'Aliyev', 701234111, 'kamal@mail.com', 30, 'Male', 0),
-('Leyla', 'Quliyeva', 991234999, 'leyla@mail.com', 27, 'Female', 1),
-('Nijat', 'Karimov', 771234555, 'nijat@mail.com', 35, 'Male', 0);
+('John', 'Smith', 123456789, 'john.smith@email.com', 25, 'Male', 1, 1),
+('Anna', 'Muller', 987654321, 'anna.muller@email.com', 30, 'Female', 1, 2),
+('Pierre', 'Dubois', 555666777, 'pierre.dubois@email.com', 22, 'Male', 0, 3);
 
-
-INSERT INTO Cities
-([Name], Area, PersonId)
-VALUES
-('Baku', 2130.50, 1),
-('Ankara', 1100.00, 2),
-('Batumi', 830.75, 3),
-('Munhen', 450.40, 4),
-('Paris', 600.60, 5);
-
-
-INSERT INTO Countries
-([Name], Area, CityId)
-VALUES
-('Azerbaijan', 86600.00, 1),
-('Turkey', 783562.00, 2),
-('Georgia', 69700.00, 3),
-('Germany', 357022.00, 4),
-('France', 551695.00, 5);
 
 
 SELECT p.[Name],p.Surname,co.[Name] CountryName, ci.[Name] CityName FROM People p
 JOIN Cities ci
-ON ci.PersonId = p.Id
+ON ci.Id = p.CityId
 JOIN Countries co
-ON co.CityId = ci.Id
+ON co.Id = ci.CountryId
 
-SELECT * FROM Countries ORDER BY Area;
+SELECT * FROM Countries ORDER BY Area ASC;
 
 SELECT * FROM Countries ORDER BY [Name] DESC;
 
-SELECT *,(SELECT TOP 1 Area FROM Countries ORDER BY Area DESC) AS MaxArea FROM Countries WHERE Name LIKE 'I%';
+SELECT COUNT(*) AS CountryCount FROM Countries WHERE Area > 20000;
 
-SELECT * FROM Countries
-UNION ALL
-SELECT * FROM Cities
+SELECT *,(SELECT TOP 1 Area FROM Countries ORDER BY Area DESC) 
+AS MaxArea FROM Countries WHERE Name LIKE 'I%';
+
+SELECT MAX(Area) AS MaxArea FROM Countries WHERE [Name] LIKE N'İ%';
+
+SELECT [Name] AS PlaceName FROM Countries
+UNION
+SELECT [Name]
+FROM Cities;
+
+SELECT c.[Name] AS CityName, COUNT(p.Id) AS PersonCount FROM Cities c LEFT JOIN People p ON p.CityId = c.Id
+GROUP BY c.[Name];
 
 
+SELECT c.[Name] AS CityName, COUNT(p.Id) AS PersonCount FROM Cities c
+JOIN People p ON p.CityId = c.Id
+GROUP BY c.[Name]
+HAVING COUNT(p.Id) > 50000;
 
